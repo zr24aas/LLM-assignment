@@ -1,0 +1,29 @@
+CB_BLUE = "#0072B2"
+CB_ORANGE = "#E69F00"
+CB_GREEN = "#009E73"
+CB_RED = "#D55E00"
+CB_PURPLE = "#CC79A7"
+CB_SKY = "#56B4E9"
+CB_YELLOW = "#F0E442"
+CB_BLACK = "#000000"
+
+CB_PALETTE = [
+    CB_BLUE,
+    CB_ORANGE,
+    CB_GREEN,
+    CB_RED,
+    CB_PURPLE,
+    CB_SKY,
+    CB_YELLOW,
+    CB_BLACK
+]
+
+# Applying to Seaborn plots by default
+sns.set_palette(CB_PALETTE)
+
+# This code for Consistent figure appearance
+plt.rcParams["figure.figsize"] = (6, 4)
+plt.rcParams["axes.titlesize"] = 12
+plt.rcParams["axes.labelsize"] = 10
+plt.rcParams["legend.fontsize"] = 9
+plt.rcParams["figure.dpi"] = 120

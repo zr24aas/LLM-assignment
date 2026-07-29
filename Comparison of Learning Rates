@@ -1,0 +1,75 @@
+LEARNING_RATES = [2e-5, 3e-5]
+
+tuning_results = []
+
+for lr in LEARNING_RATES:
+
+
+    print(f"Testing learning rate: {lr}")
+
+
+    # Here Loading a fresh BERT model for each experiment
+    tune_model = AutoModelForSequenceClassification.from_pretrained(
+        MODEL_NAME,
+        num_labels=2
+    ).to(device)
+
+    # Memory optimisation step
+    tune_model.gradient_checkpointing_enable()
+
+    tune_optimizer = torch.optim.AdamW(
+        tune_model.parameters(),
+        lr=lr,
+        weight_decay=0.01
+    )
+
+    #only one epoch for this preliminary experiment
+    tune_epochs = 1
+    total_steps = len(tune_train_loader) * tune_epochs
+
+    tune_scheduler = get_linear_schedule_with_warmup(
+        tune_optimizer,
+        num_warmup_steps=int(0.1 * total_steps),
+        num_training_steps=total_steps
+    )
+
+    train_loss, train_metrics = train_one_epoch(
+        tune_model,
+        tune_train_loader,
+        tune_optimizer,
+        tune_scheduler,
+        device
+    )
+
+    (
+        val_loss,
+        val_metrics,
+        val_predictions,
+        val_true_labels,
+        val_probabilities
+    ) = evaluate_model(
+        tune_model,
+        tune_val_loader,
+        device
+    )
+
+    tuning_results.append({
+        "Learning Rate": lr,
+        "Train Loss": train_loss,
+        "Validation Loss": val_loss,
+        "Validation Accuracy": val_metrics["Accuracy"],
+        "Validation Precision": val_metrics["Precision"],
+        "Validation Recall": val_metrics["Recall"],
+        "Validation F1": val_metrics["F1-score"]
+    })
+
+    print(f"Train Loss          : {train_loss:.4f}")
+    print(f"Validation Loss     : {val_loss:.4f}")
+    print(f"Validation Accuracy : {val_metrics['Accuracy']:.4f}")
+    print(f"Validation F1       : {val_metrics['F1-score']:.4f}")
+
+    del tune_model
+    del tune_optimizer
+    del tune_scheduler
+
+    torch.cuda.empty_cache()
